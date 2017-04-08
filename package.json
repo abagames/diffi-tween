@@ -1,0 +1,21 @@
+{
+  "name": "diffi-tween",
+  "version": "1.0.0",
+  "description": "Difficulty curve viewer",
+  "author": "ABA",
+  "license": "MIT",
+  "scripts": {
+    "wds": "webpack-dev-server --inline",
+    "build": "webpack"
+  },
+  "devDependencies": {
+    "@types/chart.js": "^2.4.2",
+    "awesome-typescript-loader": "^3.1.2",
+    "typescript": "^2.2.2",
+    "webpack": "^2.3.3",
+    "webpack-dev-server": "^2.4.2"
+  },
+  "dependencies": {
+    "chart.js": "^2.5.0"
+  }
+}
