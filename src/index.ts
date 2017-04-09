@@ -15,39 +15,42 @@ const funcs = [
     func: (t, a) => Math.pow(a * t, 2) + 1
   }
 ];
+const maxTicksCount = 30;
+const ticksPerCount = 60 * 2;
 let properties: any = {};
 let diffiChart;
-let frameCount = 0;
-let prevFrameCount = 0;
+let ticksCount = 0;
+let prevTicksCount = 0;
 
-export function init() {
+export function init(onComplete: Function) {
   const request = new XMLHttpRequest();
   request.open('GET', 'properties.json');
   request.send();
   request.onload = () => {
     setProperties(JSON.parse(request.responseText).properties);
+    onComplete();
   };
 }
 
-export function setFrameCount(ticks = 0) {
-  frameCount = Math.floor(ticks / 60 / 5);
-  if (frameCount > 35) {
-    frameCount = 35;
+export function setTicks(ticks = 0) {
+  ticksCount = Math.floor(ticks / ticksPerCount);
+  if (ticksCount >= maxTicksCount) {
+    ticksCount = maxTicksCount - 1;
   }
-  if (frameCount !== prevFrameCount) {
-    prevFrameCount = frameCount;
+  if (ticksCount !== prevTicksCount) {
+    prevTicksCount = ticksCount;
     diffiChart.update();
   }
 }
 
 export function getProperty(name: string) {
-  return properties[name].data[frameCount];
+  return properties[name].data[ticksCount];
 }
 
 function setProperties(propertyNames: string[]) {
   propertyNames.forEach(n => {
     let defaultData = [];
-    for (let i = 0; i < 36; i++) {
+    for (let i = 0; i < maxTicksCount; i++) {
       defaultData.push(1);
     }
     properties[n] = {
@@ -63,8 +66,8 @@ function setProperties(propertyNames: string[]) {
 
 function initChart(propertyNames: string[]) {
   let labels = [];
-  for (let i = 0; i < 36; i++) {
-    labels.push(i % 12 < 11 ? '' : `${Math.ceil(i / 12)}m`);
+  for (let i = 0; i < maxTicksCount; i++) {
+    labels.push(i % 5 < 4 ? '' : `${Math.ceil(i / 5)}0s`);
   }
   const borderColors = ['#a77', '#7a7', '#77a', '#aa7', '#a7a', '#7aa'];
   const backgroundColors = ['#faa', '#afa', '#aaf', '#ffa', '#faf', '#aff'];
@@ -89,7 +92,7 @@ function initChart(propertyNames: string[]) {
           const context =
             (<HTMLCanvasElement>document.getElementById('chart')).getContext('2d');
           const x = (<any>diffiChart).chart.controller.getDatasetMeta(0).
-            data[frameCount]._model.x;
+            data[ticksCount]._model.x;
           context.fillStyle = '#444';
           context.fillRect(x - 1, top, 3, bottom - top);
         }
@@ -156,8 +159,8 @@ function setData(name: string) {
   const p = properties[name];
   const climb = Math.pow(p.climb, 2);
   let sawRatio = 0;
-  for (let i = 0; i < 36; i++) {
-    let v = p.func.func(i / 12, climb);
+  for (let i = 0; i < maxTicksCount; i++) {
+    let v = p.func.func(i / (30 * 60 / ticksPerCount), climb);
     if (p.saw < 2) {
       sawRatio += 1 / (p.saw * 10 + 2);
       v = (v - 1) * sawRatio + 1;
