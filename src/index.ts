@@ -35,7 +35,7 @@ function init() {
         name: n,
         data: defaultData,
         func: funcs[0],
-        param: 1,
+        climb: 1,
         saw: 2
       };
     });
@@ -83,7 +83,7 @@ function initChart(propertyNames: string[]) {
     span.innerText = n;
     slidesDom.appendChild(span);
     appendFuncRadios(slidesDom, n);
-    appendSlider(slidesDom, n, 'param', '1');
+    appendSlider(slidesDom, n, 'climb', '1');
     appendSlider(slidesDom, n, 'saw', '2');
     setData(n);
   });
@@ -134,9 +134,18 @@ function appendSlider(parent: HTMLElement, propName: string, name: string, value
 
 function setData(name: string) {
   const p = properties[name];
-  const param = Math.pow(p.param, 2);
+  const climb = Math.pow(p.climb, 2);
+  let sawRatio = 0;
   for (let i = 0; i < 36; i++) {
-    p.data[i] = p.func.func(i / 12, param);
+    let v = p.func.func(i / 12, climb);
+    if (p.saw < 2) {
+      sawRatio += 1 / (p.saw * 10 + 2);
+      v = (v - 1) * sawRatio + 1;
+      if (sawRatio >= 1) {
+        sawRatio = 0;
+      }
+    }
+    p.data[i] = v;
   }
   diffiChart.update();
 }
