@@ -17,6 +17,7 @@ const funcs = [
 ];
 const maxTicksCount = 30;
 const ticksPerCount = 60 * 2;
+const version = '1';
 let properties: any = {};
 let diffiChart;
 let ticksCount = 0;
@@ -28,6 +29,7 @@ export function init(onComplete: Function) {
   request.send();
   request.onload = () => {
     setProperties(JSON.parse(request.responseText).properties);
+    setFromUrl();
     onComplete();
   };
 }
@@ -56,12 +58,18 @@ function setProperties(propertyNames: string[]) {
     properties[n] = {
       name: n,
       data: defaultData,
-      func: funcs[0],
+      funcIndex: 0,
       climb: 1,
-      saw: 2
+      saw: 2,
+      radios: [],
+      sliders: []
     };
   });
   initChart(propertyNames);
+  /*properties['speed'].radios[2].click();
+  properties['speed'].sliders[0].valueAsNumber = 1.8;
+  const event = new CustomEvent('input');
+  properties['speed'].sliders[0].dispatchEvent(event);*/
 }
 
 function initChart(propertyNames: string[]) {
@@ -108,7 +116,7 @@ function initChart(propertyNames: string[]) {
     appendFuncRadios(slidesDom, n);
     appendSlider(slidesDom, n, 'climb', '1');
     appendSlider(slidesDom, n, 'saw', '2');
-    setData(n);
+    setData(n, false);
   });
 }
 
@@ -125,8 +133,10 @@ function appendFuncRadios(parent: HTMLElement, propName: string) {
       name="${propName}" value="${i}" ${isFirst ? 'checked' : ''}>
       <span class="mdl-radio__label">${f.name}</span>
     `;
-    label.childNodes.item(1).addEventListener('click', e => {
-      properties[propName].func = funcs[Number((<any>e.srcElement).value)];
+    const input = label.childNodes.item(1);
+    properties[propName].radios.push(input);
+    input.addEventListener('click', e => {
+      properties[propName].funcIndex = Number((<any>e.srcElement).value);
       setData(propName);
     });
     radios.appendChild(label);
@@ -151,16 +161,18 @@ function appendSlider(parent: HTMLElement, propName: string, name: string, value
     properties[propName][name] = (<any>e.srcElement).valueAsNumber;
     setData(propName);
   });
+  properties[propName].sliders.push(slider);
   parent.appendChild(slider);
   componentHandler.upgradeElement(slider);
 }
 
-function setData(name: string) {
+function setData(name: string, isCreatingUrl = true) {
   const p = properties[name];
   const climb = Math.pow(p.climb, 2);
   let sawRatio = 0;
+  const func = funcs[p.funcIndex].func;
   for (let i = 0; i < maxTicksCount; i++) {
-    let v = p.func.func(i / (30 * 60 / ticksPerCount), climb);
+    let v = func(i / (30 * 60 / ticksPerCount), climb);
     if (p.saw < 2) {
       sawRatio += 1 / (p.saw * 10 + 2);
       v = (v - 1) * sawRatio + 1;
@@ -171,4 +183,52 @@ function setData(name: string) {
     p.data[i] = v;
   }
   diffiChart.update();
+  if (isCreatingUrl) {
+    createUrl();
+  }
+}
+
+function createUrl() {
+  const baseUrl = window.location.href.split('?')[0];
+  let url = `${baseUrl}?v=${version}`;
+  Object.keys(properties).forEach(propName => {
+    const p = properties[propName];
+    url += `&f_${propName}=${p.funcIndex}&c_${propName}=${p.climb}&s_${propName}=${p.saw}`
+  });
+  try {
+    window.history.replaceState({}, '', url);
+  } catch (e) {
+    console.log(e);
+  }
+}
+
+function setFromUrl() {
+  const query = window.location.search.substring(1);
+  if (query == null) {
+    return;
+  }
+  try {
+    query.split('&').forEach(param => {
+      const pair = param.split('=');
+      const key: string = pair[0];
+      const value: string = pair[1];
+      if (key === 'v' && value !== version) {
+        return;
+      }
+      const propName = key.substr(2);
+      if (key.charAt(0) === 'f') {
+        properties[propName].radios[Number(value)].click();
+      } else if (key.charAt(0) === 'c') {
+        properties[propName].sliders[0].valueAsNumber = Number(value);
+        const event = new CustomEvent('input');
+        properties[propName].sliders[0].dispatchEvent(event);
+      } else if (key.charAt(0) === 's') {
+        properties[propName].sliders[1].valueAsNumber = Number(value);
+        const event = new CustomEvent('input');
+        properties[propName].sliders[1].dispatchEvent(event);
+      }
+    });
+  } catch (e) {
+    console.log(e);
+  }
 }
