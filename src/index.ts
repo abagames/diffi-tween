@@ -1,7 +1,6 @@
 import * as Chart from 'chart.js';
 declare const componentHandler: any;
 
-let properties: any = {};
 const funcs = [
   {
     name: 'sqrt',
@@ -16,31 +15,50 @@ const funcs = [
     func: (t, a) => Math.pow(a * t, 2) + 1
   }
 ];
+let properties: any = {};
 let diffiChart;
+let frameCount = 0;
+let prevFrameCount = 0;
 
-window.onload = init;
-
-function init() {
+export function init() {
   const request = new XMLHttpRequest();
   request.open('GET', 'properties.json');
   request.send();
   request.onload = () => {
-    const propertyNames = JSON.parse(request.responseText).properties;
-    propertyNames.forEach(n => {
-      let defaultData = [];
-      for (let i = 0; i < 36; i++) {
-        defaultData.push(1);
-      }
-      properties[n] = {
-        name: n,
-        data: defaultData,
-        func: funcs[0],
-        climb: 1,
-        saw: 2
-      };
-    });
-    initChart(propertyNames);
+    setProperties(JSON.parse(request.responseText).properties);
   };
+}
+
+export function setFrameCount(ticks = 0) {
+  frameCount = Math.floor(ticks / 60 / 5);
+  if (frameCount > 35) {
+    frameCount = 35;
+  }
+  if (frameCount !== prevFrameCount) {
+    prevFrameCount = frameCount;
+    diffiChart.update();
+  }
+}
+
+export function getProperty(name: string) {
+  return properties[name].data[frameCount];
+}
+
+function setProperties(propertyNames: string[]) {
+  propertyNames.forEach(n => {
+    let defaultData = [];
+    for (let i = 0; i < 36; i++) {
+      defaultData.push(1);
+    }
+    properties[n] = {
+      name: n,
+      data: defaultData,
+      func: funcs[0],
+      climb: 1,
+      saw: 2
+    };
+  });
+  initChart(propertyNames);
 }
 
 function initChart(propertyNames: string[]) {
@@ -68,10 +86,12 @@ function initChart(propertyNames: string[]) {
           const meta = (<any>diffiChart).chart.controller.getDatasetMeta(0);
           const top = meta.dataset._model.scaleTop;
           const bottom = meta.dataset._model.scaleBottom;
-          const context = (<HTMLCanvasElement>document.getElementById('chart')).getContext('2d');
-          const x = (<any>diffiChart).chart.controller.getDatasetMeta(0).data[1]._model.x;
-          context.fillStyle = '#000';
-          context.fillRect(x, top, 1, bottom - top);
+          const context =
+            (<HTMLCanvasElement>document.getElementById('chart')).getContext('2d');
+          const x = (<any>diffiChart).chart.controller.getDatasetMeta(0).
+            data[frameCount]._model.x;
+          context.fillStyle = '#444';
+          context.fillRect(x - 1, top, 3, bottom - top);
         }
       }
     }
