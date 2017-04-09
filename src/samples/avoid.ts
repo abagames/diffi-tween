@@ -48,8 +48,12 @@ function update() {
   updateActors();
   ticks++;
   diffiTween.setTicks(ticks);
-  if (!isGameStarting && isClicked) {
-    changeScene(true);
+  if (!isGameStarting) {
+    context.fillText('GAME OVER', 90, 90);
+    context.fillText('click to start', 90, 150);
+    if (isClicked) {
+      changeScene(true);
+    }
   }
 }
 
