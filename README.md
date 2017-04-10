@@ -1,6 +1,8 @@
 diffi-tween ([Demo](https://abagames.github.io/diffi-tween/index.html))
 ======================
-Difficulty curve viewer
+Difficulty curve viewer.
+
+![screenshot](https://abagames.github.io/diffi-tween/screenshot.png)
 
 ### Libraries
 
