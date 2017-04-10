@@ -22,6 +22,7 @@ function init() {
   };
   context = canvas.getContext('2d');
   context.fillStyle = 'white';
+  context.font = "14px 'Roboto mono'";
   diffiTween.init(update);
 }
 
@@ -49,8 +50,8 @@ function update() {
   ticks++;
   diffiTween.setTicks(ticks);
   if (!isGameStarting) {
-    context.fillText('GAME OVER', 90, 90);
-    context.fillText('click to start', 90, 150);
+    context.fillText('GAME OVER', 85, 100);
+    context.fillText('click to start', 65, 180);
     if (isClicked) {
       changeScene(true);
     }
