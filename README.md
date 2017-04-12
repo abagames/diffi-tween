@@ -1,4 +1,4 @@
-diffi-tween ([Demo](https://abagames.github.io/diffi-tween/index.html))
+diffi-tween ([Demo](https://abagames.github.io/diffi-tween/))
 ======================
 Difficulty curve viewer.
 
