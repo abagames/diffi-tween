@@ -136,7 +136,7 @@ function appendFuncRadios(parent: HTMLElement, propName: string) {
     const input = label.childNodes.item(1);
     properties[propName].radios.push(input);
     input.addEventListener('click', e => {
-      properties[propName].funcIndex = Number((<any>e.srcElement).value);
+      properties[propName].funcIndex = Number((<any>e.target).value);
       setData(propName);
     });
     radios.appendChild(label);
@@ -158,7 +158,7 @@ function appendSlider(parent: HTMLElement, propName: string, name: string, value
   slider.value = value;
   slider.step = '0.2';
   slider.addEventListener('input', e => {
-    properties[propName][name] = (<any>e.srcElement).valueAsNumber;
+    properties[propName][name] = (<any>e.target).valueAsNumber;
     setData(propName);
   });
   properties[propName].sliders.push(slider);

@@ -4682,7 +4682,7 @@ function appendFuncRadios(parent, propName) {
         var input = label.childNodes.item(1);
         properties[propName].radios.push(input);
         input.addEventListener('click', function (e) {
-            properties[propName].funcIndex = Number(e.srcElement.value);
+            properties[propName].funcIndex = Number(e.target.value);
             setData(propName);
         });
         radios.appendChild(label);
@@ -4703,7 +4703,7 @@ function appendSlider(parent, propName, name, value) {
     slider.value = value;
     slider.step = '0.2';
     slider.addEventListener('input', function (e) {
-        properties[propName][name] = e.srcElement.valueAsNumber;
+        properties[propName][name] = e.target.valueAsNumber;
         setData(propName);
     });
     properties[propName].sliders.push(slider);
